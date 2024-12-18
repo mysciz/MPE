@@ -1,2 +1,2 @@
 # MPE
-XJTU Mathematical Physics Equations Course Repor
+XJTU Mathematical Physics Equations Course Report
