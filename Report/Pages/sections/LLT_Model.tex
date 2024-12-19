@@ -1,0 +1,38 @@
+\titleformat{\chapter}[hang]{\linespread{1}\heiti\sanhao\bfseries\filright}{\thechapter}{1em}{}{}
+\chapter{LLT模型}
+\section{模型概览}
+2003年，Marius Lysaker等人提出了一种能够有效抑制ROF模型阶梯效应的LLT模型\cite{lysaker2003noise}：
+\begin{equation}
+    \min _{u}\{J(u)=\alpha \int _{\Omega}|D^{2}u|dxdy+\frac{1}{2}||u-f||^{2}\}.
+    \tag{16}
+\end{equation}
+其中,$u$为原始图像（未知）；$|D^{2}u|=\sqrt{u_{xx}^{2}+u_{xy}^{2}+u_{yx}^{2}+u_{yy}^{2}}$；$f$为已知的观察图像；$\Omega$是有界凸集；$\alpha$是用来调节光滑项和拟合项的正则化参数，$\alpha$较大时恢复图像比较光滑，$\alpha$较小时拟合效果好。
+
+在LLT模型中，二阶梯度被用作正则化项，以平滑图像并减少噪声的影响，同时保留边缘信息。但由于涉及二阶梯度，其计算通常比一阶梯度更为复杂，需要更多的计算资源和时间。所以，在LLT模型求解过程中我们使用不动点迭代法。下面给出不动点迭代法的算法步骤\cite{rezaiee2023evaluation}：
+
+可知LLT模型的Euler-Lagrange方程为
+\begin{equation}
+    g(u)=\alpha (\frac{u_{xx}}{|D^{2}u|})+\frac{(u_{yx})}{|D^{2}u|})_{yx}+(\frac{u_{xy}}{|D^{2}u|})_{xy}+\frac{(u_{yy}}{|D^{2}u|})_{yy}]+(u-f)=0.
+    \tag{17}
+\end{equation}
+选择一个初始猜测 $u^0$，通常可以选择观察到的图像 $f$ 作为初始值。对于每一步迭代 $k$，使用下面的迭代公式更新 $u$：
+\begin{equation}
+    u^{k+1} = \text{prox}_{\lambda \alpha |D^2|}(u^k + \lambda (u^k - f))
+    \tag{18}
+\end{equation}
+其中 $\text{prox}$ 是近端算子，定义为：
+\begin{equation}
+    \text{prox}_{\lambda \alpha |D^2|}(v) = \arg\min_u \left\{ \frac{1}{2\lambda} \|u - v\|^2 + \alpha \int_{\Omega} |D^2 u| \, dxdy \right\}.
+    \tag{19}
+\end{equation}
+这个近端算子的计算涉及到求解一个带有二阶梯度的优化问题，通常需要数值方法来求解。
+检查迭代是否收敛。如果 $u^{k+1}$ 与 $u^k$ 之间的变化非常小，或者达到了预设的最大迭代次数，则停止迭代。
+
+显然， $\alpha$ 和 $\lambda$ 的选择对算法的性能有显著影响，在实际应用中，由于涉及到高阶导数的计算，可能会遇到数值不稳定的问题。可以通过引入适当的数值稳定技术来解决。
+
+LLT模型在图像处理中具有广泛的应用前景，特别是在需要快速响应图像变化的应用中。然而，LLT模型可能会受到边界效应的影响，因此在实际应用中可能需要结合其他方法来进行边界处理。
+
+\section{对比分析}
+ROF模型通过最小化图像的总变分来实现去噪。这种方法在去除噪声的同时，能够较好地保护图像的边缘和纹理细节。然而，ROF模型可能会产生“锯齿效应”，即在图像边缘处出现不平滑的现象。
+
+LLT模型通过引入二阶滤波器的概念来平滑图像数据，从而减少噪声的影响并保留边缘信息。然而，与ROF去噪模型相比，LLT模型不是通过递归的方式计算每个像素点的LLT值，而是通过求解一个涉及二阶梯度的变分问题来找到最优解。这种方法有效地减少了传统边缘检测方法的延迟问题，同时保留了边缘检测的能力。相比之下，ROF模型主要关注一阶梯度，可能在边缘保持方面略有不同，但同样需要考虑边界条件和数值稳定性问题。

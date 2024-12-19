@@ -1,0 +1,59 @@
+\titleformat{\chapter}[hang]{\linespread{1}\heiti\sanhao\bfseries\filright}{\thechapter}{1em}{}{}
+\chapter{图像去噪的偏微分方程模型}
+\section{模型导出}
+数字图像在获取和传输过程中，常受到成像设备、外部环境等因素的影响，从而引入噪声，这些噪声会降低图像质量，影响图像分析和识别等后续任务的准确性。图像去噪可以有效地减少数字图像中的噪声，从而提高图像质量。
+
+在最初的图像去噪的偏微分方程模型中，主要基于以下认识。
+
+定理1：令$\left\{T_t\right\}_{t\in R_+}$是一个因果的尺度空间，具有以下性质：对任意$(x,y)\in R^2,p \in R^2$和$2\times 2$的对称矩阵\textbf{A},存在图像函数u满足$Du(x,y)=p$，$D^2 u(x,y)=A$。如果尺度空间中的转移算子$T_{t,s}$是线性的并且是欧式不变的，则函数$u(t,x,y)=(T,u_0)(x,y)$是以下热传导方程的解。\cite{aubert2006mathematical}
+\begin{equation}
+\left\{
+\begin{aligned}
+& \partial_tu-\Delta u=0 \\
+& u(x,y,0)=u_0(x,y)
+\end{aligned}
+\right.
+\tag{1}
+\end{equation}
+
+定理1说明了以高斯函数卷积为代表的一类低通滤波器等价于求解以信号为初值的热传导方程，这就为偏微分方程于图像处理架起了桥梁。\cite{JGDJ200508009}
+
+\section{方程求解}
+定理1表明线性去噪模型(1)式的解实际上等价于高斯光滑过程，因而能实现对噪声的抑制。用 分 离 变 量法求解(1)式，可得其解的正弦级数展开式为：
+\begin{equation}
+    u(x_1, x_2, t) = \sum_{k=1}^M \sum_{l=1}^N A_{k,l} \exp\left[-\left(\frac{k^2\pi^2t}{M^2} + \frac{l^2\pi^2t}{N^2}\right)\right] \sin\left(\frac{k\pi x_1}{M}\right) \sin\left(\frac{l\pi x_2}{N}\right)
+    \tag{2}
+\end{equation}
+其中$N$、$M$分别为沿$x$、$y$方向的采样点个数，$A_{k,t}$为含噪图像$u_0(x,y)$按正弦级数展开后的系数。(2)式表明，经(1)式去噪后的图像的频谱等于含噪图像的频谱乘以一个与扩散时间相关的萎缩因子$w(k,l)=exp[-(k^2\pi^2t/M^2+l^2\pi^2t/N^2)$，而随着$k,l$的增大$w(k,l)$不断减小，因此(2)式对$u_0(x,y)$的高频成分保留很少，因而能实现对噪声的抑制。\cite{JGDJ200508009}
+
+\section{模型优化}
+然而，高斯滤波在处理图像时，不仅会作用于噪声和细节，也会对图像的边缘产生影响，导致边缘变得模糊。为避免模糊的产生，引入了非线性扩散方程。
+非线性扩散模型的优点是，扩散系数的取值取决于图像梯度，在梯度小处(对应图像的平坦区域)取值大以确保对噪声的抑制，在梯度大处(对应图像的边缘)取值小以保护边缘。\cite{56205}
+\begin{equation}
+\left\{
+\begin{aligned}
+& \partial_{t}u=div[g(\bigtriangledown |u|^{2})\bigtriangledown u] \\ 
+& |g(|\bigtriangledown u|^{2})=1/(1+|\bigtriangledown u|^{2}/k^{2}) \\
+& (x, y, 0)=u_{0}(x, y)
+\end{aligned}
+\right.
+\tag{3}
+\end{equation}
+上述方程的隐式表达式为
+\begin{equation}
+    [u(x, t+h)-u(x, t)]/h=div[g(|\bigtriangledown u|^{2}\bigtriangledown u)(x, t+h), \space u(x, 0)=u_{0}(x, y)
+    \tag{4}
+    \cite{scherzer2000relations}
+\end{equation}
+其中$h>0$为迭代步长。假设$g$在$(0,\infty)$上可测，且存在一个$(0,\infty)$上的可微函数$\psi$ 满足 $\psi^{\prime}=g$，那么下述函数的最小解在$t+h$时刻满足方程(5)
+\begin{equation}
+    J(u)=||u-u(x,y,t)||^{2}+h\int _{\Omega}\psi (|\bigtriangledown u|)^{2}d\Omega
+    \tag{5}
+\end{equation}
+等价变换可得正则化方程（6）
+\begin{equation}
+     J(u) = ||u - u_{0}(x, y, t)||^{2} + h \int_{\Omega} |\psi(
+\bigtriangledown u)|^{2} d\Omega
+\tag{6}
+\end{equation}
+值得注意的是，在非线性扩散方程的求解过程中，我们应用了正则化方法，，通过对问题的解附加约束条件来保证解的稳定性和唯一性。

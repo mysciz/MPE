@@ -1,0 +1,51 @@
+\titleformat{\chapter}[hang]{\linespread{1}\heiti\sanhao\bfseries\filright}{\thechapter}{1em}{}{}
+\chapter{ROF模型}
+\section{模型导出}
+实际上，图像去噪的根本目标是将观察到的噪声图像 $ f $ 恢复成原始的清晰图像 $ u $。这个过程可以通过求解一个优化问题来实现。ROF模型的核心思想就是最小化图像的总变差，同时保持与观测数据的一致性。
+
+在ROF模型中，定义图像 $ u $ 的梯度的 $ L^1 $ 范数为总变差（TV）范数，作为衡量图像变化程度的一个指标。\cite{rudin1994total}
+\begin{equation}
+    \text{TV}(u) = \int_{\Omega} |\bigtriangledown u| \, dx 
+    \tag{7}
+\end{equation}
+其中，$ \bigtriangledown u $ 表示图像 $ u $ 的梯度，$ |\bigtriangledown u| $ 是梯度的模长，$ \Omega $ 是图像的定义域。
+
+同时，为了确保恢复的图像与观测数据一致，需要引入数据保真项（也称为保真项或拟合项），通常使用 $ L^2 $ 范数来度量观测图像 $ f $ 和恢复图像 $ u $ 之间的差异：
+\begin{equation}
+||L||_2=\frac{1}{2} \int_{\Omega} (u - f)^2 \, dx 
+\tag{8}
+\end{equation}
+
+结合上述两个部分，ROF模型可以表示为以下优化问题：
+\begin{equation}
+     \min_{u} \text{TV}(u) + \lambda \cdot \frac{1}{2} \int_{\Omega} (u - f)^2 \, dx 
+     \tag{9}
+\end{equation}
+
+其中，$ \lambda $ 是一个正则化参数，用于平衡总变差最小化和数据保真性之间的权重。上式即为ROF模型的lost Funtion,也即能量泛函，通过梯度下降法、牛顿-拉夫逊法等迭代法，最小化一个能量泛函来恢复或去噪图像。
+
+\section{数值求解}
+对于ROF模型的求解，通常采用迭代法，可以使用梯度下降法（公式（10），也可以使用牛顿-拉夫逊法（公式（11），但这里给出Primal-Dual算法\cite{chen2013primal}。
+\begin{equation}
+     x_{n+1} = x_n - \alpha_n \bigtriangledown f(x_n) \tag{10} 
+\end{equation}
+\begin{equation}
+        x_{n+1} = x_n - [H(x_n)]^{-1} \bigtriangledown f(x_n) \tag{11}
+\end{equation}
+
+对于Primal-Dual算法，给出以下算法步骤。
+
+引入对偶变量 \( p \)，定义拉格朗日函数：
+\[ L(u, p) = \int_{\Omega} \phi(|\bigtriangledown u|) \, dx + \frac{\lambda}{2} \int_{\Omega} |u - v|^2 \, dx + \int_{\Omega} p \cdot (-\bigtriangledown u) \, dx \tag{12}\]
+通过对$u$ 和 $p$ 分别求导，我们可以得到以下更新规则：
+
+更新原始变量 \( u \)：
+\[ u^{k+1} = (\lambda I + \bigtriangledown \cdot)^{-1} (\lambda v + \bigtriangledown \cdot p^k)\tag{13} \] 
+更新对偶变量 \( p \)：
+\[ p^{k+1} = p^k + \tau (\bigtriangledown u^{k+1})\tag{14} \]
+其中$\tau$是对偶变量的步长。
+
+投影步骤（如果需要）：
+\[ p^{k+1} = \frac{p^{k+1}}{\max(1, |p^{k+1}|)} \tag{15}\]
+检查收敛性：
+如果 \( u^{k+1} \) 和 \( p^{k+1} \) 的变化小于预设阈值，则认为算法已经收敛。

@@ -1,0 +1,71 @@
+\documentclass[oneside,numberorder]{csbachelor}
+
+%==============================================================
+%==============================================================
+
+\usepackage{url}
+\usepackage{subfigure}
+\usepackage{placeins}
+% 张海：其他引用
+\usepackage[hidelinks]{hyperref}
+\setlength{\LTpre}{1em}
+\setlength{\LTpost}{1em}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows,backgrounds,fit,shapes}
+\tikzstyle{layer} = [draw, dashed]
+\tikzstyle{block} = [draw, rectangle, minimum height=2em]
+\tikzset{>=latex}
+% 一些全局工具的定义
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+%==============================================================
+%==============================================================
+
+\begin{document}
+
+%==============================================================
+
+  {
+    \pagestyle{empty}
+    \include{Pages/cover}
+
+    \cleardoublepage
+  }
+{
+    \frontmatter
+    \include{Pages/abstract/abstract-ch}
+    \include{Pages/abstract/abstract-en}
+    \pagestyle{frontmatter}
+    \tableofcontents
+    \thispagestyle{empty}
+  }
+   {
+    \mainmatter
+    \pagestyle{mainmatter}
+    \makeatletter
+      \let\ps@plain\ps@mainmatter
+    \makeatother
+    \include{Pages/sections/Introduction}
+    \cleardoublepage
+    \include{Pages/sections/PDE_for_Image_procession}
+    \cleardoublepage
+    \include{Pages/sections/ROF_Model}
+    \cleardoublepage
+    \include{Pages/sections/LLT_Model}
+    \cleardoublepage
+    \include{Pages/sections/benchmark}
+    \cleardoublepage
+    \include{Pages/sections/Conclusion}
+    \cleardoublepage
+    \renewcommand{\thechapter}{}
+    \include{Pages/sections/bibliography}
+    % \cleardoublepage
+
+    \include{data/acknowledgment}
+    % \cleardoublepage
+    \include{data/appendix}
+  }
+
+\end{document}
